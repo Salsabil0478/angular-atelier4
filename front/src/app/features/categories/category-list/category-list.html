@@ -1,0 +1,84 @@
+<nav class="navbar">
+  <a routerLink="/products" class="brand">ShopAdmin</a>
+  <div class="links">
+    <a routerLink="/products">Produits</a>
+    <a routerLink="/categories" class="active">Catégories</a>
+  </div>
+</nav>
+
+<main class="container">
+  <h1>Gestion des Catégories <small>({{ total() }})</small></h1>
+
+  <div class="add-row">
+    <input
+      type="text"
+      placeholder="Nom de la nouvelle catégorie"
+      [value]="newName()"
+      (input)="newName.set($any($event.target).value)"
+      (keyup.enter)="add()"
+    />
+    <button class="btn primary" (click)="add()">Ajouter</button>
+  </div>
+
+  <input
+    type="text"
+    class="search"
+    placeholder="Rechercher une catégorie…"
+    [value]="search()"
+    (input)="search.set($any($event.target).value)"
+  />
+
+  @if (loading()) {
+    <p>Chargement…</p>
+  }
+
+  @if (error() && !loading()) {
+    <p class="error">{{ error() }} <button class="btn" (click)="load()">Réessayer</button></p>
+  }
+
+  @if (!loading() && !error()) {
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Nom</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        @for (c of filtered(); track c.id) {
+          <tr>
+            <td>{{ c.id }}</td>
+            <td>
+              @if (editingId() === c.id) {
+                <input
+                  type="text"
+                  [value]="editName()"
+                  (input)="editName.set($any($event.target).value)"
+                  (keyup.enter)="saveEdit(c.id)"
+                />
+              } @else {
+                {{ c.name }}
+              }
+            </td>
+            <td class="actions">
+              @if (editingId() === c.id) {
+                <button class="btn primary" (click)="saveEdit(c.id)">Enregistrer</button>
+                <button class="btn" (click)="cancelEdit()">Annuler</button>
+              } @else {
+                <button class="btn" (click)="startEdit(c)">Modifier</button>
+                <button class="btn danger" (click)="deleteCategory(c)">Supprimer</button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="3" class="empty">Aucune catégorie trouvée</td></tr>
+        }
+      </tbody>
+    </table>
+  }
+</main>
+
+@if (toast()) {
+  <div class="toast" [class.success]="toast()!.type === 'success'" [class.error]="toast()!.type === 'error'">
+    {{ toast()!.message }}
+  </div>
+}
+
+<app-confirm-dialog #confirmDialog />

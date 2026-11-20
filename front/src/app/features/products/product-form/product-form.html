@@ -1,0 +1,141 @@
+<nav class="navbar">
+  <a routerLink="/products" class="navbar-brand">
+    <span>ShopAdmin</span>
+  </a>
+  <div class="navbar-links">
+    <a routerLink="/products" class="nav-link">Produits</a>
+    <a routerLink="/categories" class="nav-link">Catégories</a>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="form-header">
+    <button class="back-btn" (click)="cancel()">← Annuler</button>
+    <h1 class="form-title">{{ pageTitle() }}</h1>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement…</p>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  }
+
+  @if (!loading()) {
+    <div class="form-layout">
+      <form class="form-card" [formGroup]="form" (ngSubmit)="submit()">
+
+        <div class="form-group">
+          <label class="form-label required">Nom du produit</label>
+          <input type="text" class="form-control" formControlName="name"
+            placeholder="Ex: iPhone 15 Pro" [class.invalid]="hasError('name')" />
+          @if (hasError('name', 'required')) {
+            <span class="form-error">Le nom est obligatoire</span>
+          }
+          @if (hasError('name', 'minlength')) {
+            <span class="form-error">Minimum 2 caractères</span>
+          }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label required">Prix (€)</label>
+            <input type="number" class="form-control" formControlName="price"
+              placeholder="0.00" step="0.01" min="0" [class.invalid]="hasError('price')" />
+            @if (hasError('price', 'required')) {
+              <span class="form-error">Le prix est obligatoire</span>
+            }
+            @if (hasError('price', 'min')) {
+              <span class="form-error">Le prix doit être positif</span>
+            }
+          </div>
+          <div class="form-group">
+            <label class="form-label">Stock</label>
+            <input type="number" class="form-control" formControlName="stock"
+              placeholder="0" min="0" [class.invalid]="hasError('stock')" />
+            @if (hasError('stock', 'min')) {
+              <span class="form-error">Le stock doit être positif</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Catégorie</label>
+            <select class="form-control" formControlName="category_id">
+              <option [ngValue]="null">-- Aucune catégorie --</option>
+              @for (cat of categories(); track cat.id) {
+                <option [ngValue]="cat.id">{{ cat.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">SKU</label>
+            <input type="text" class="form-control" formControlName="sku"
+              placeholder="Ex: IPHONE-15-PRO" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" formControlName="description"
+            placeholder="Décrivez votre produit…" rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">URL de l'image</label>
+          <input type="url" class="form-control" formControlName="image_url"
+            placeholder="https://example.com/image.jpg" />
+        </div>
+
+        <div class="form-group toggle-group">
+          <label class="form-label">Statut</label>
+          <div class="toggle-wrapper" (click)="toggleActive()">
+            <div class="toggle-track" [class.on]="isActiveValue">
+              <div class="toggle-thumb"></div>
+            </div>
+            <span class="toggle-label" [class.active]="isActiveValue">
+              {{ isActiveValue ? 'Actif' : 'Inactif' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="cancel()">Annuler</button>
+          <button type="submit" class="btn-submit" [disabled]="saving()">
+            @if (saving()) {
+              <span class="btn-spinner"></span>
+              Enregistrement…
+            } @else {
+              {{ submitLabel() }}
+            }
+          </button>
+        </div>
+      </form>
+
+      <aside class="preview-panel">
+        <h3 class="preview-title">Aperçu de l'image</h3>
+        @if (imagePreview()) {
+          <div class="preview-image-wrapper">
+            <img [src]="imagePreview()!" alt="Aperçu" class="preview-image"
+              (error)="imagePreview.set(null)" />
+          </div>
+        } @else {
+          <div class="preview-placeholder">
+            <p>Entrez une URL d'image pour voir l'aperçu</p>
+          </div>
+        }
+      </aside>
+    </div>
+  }
+</div>
+
+@if (toast()) {
+  <div class="toast" [class.success]="toast()!.type === 'success'" [class.error]="toast()!.type === 'error'">
+    {{ toast()!.message }}
+  </div>
+}
